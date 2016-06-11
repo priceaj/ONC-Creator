@@ -259,7 +259,9 @@ onc.validateClientCert = function(outer, index, oncData, result) {
         !(pattern.EnrollmentURI instanceof Array)) {
       result.errors.push(['errorBadCertificatePattern', network.Name]);
     }
-  } else {
+  } 
+    else if (outer.ClientCertType == 'None' && network.VPN.Type == "OpenVPN") {}
+    else {
     result.errors.push(['errorLoadRequiredObjectMissing', 'ClientCertType']);
   }
   return result;
