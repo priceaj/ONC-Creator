@@ -35,12 +35,24 @@ loadDialog.setUiVisibility = function() {
  * Load the given ONC configuration and show any errors in errorDom.
  * @param {String} config  ONC formatted string.
  */
-loadDialog.loadConfig = function(configString) {
+loadDialog.loadConfig = function(configString,fileName) {
   if (!configString || configString.constructor != String) {
     return;
   }
   var passphrase = $('#load-passphrase', '#load-dialog');
   var result = { 'errors': [], 'warnings': [], 'hasOpaqueEntity': false };
+  if (fileName.substr(fileName.lastIndexOf('.')+1).toUpperCase() == "OVPN") {
+    //Build ONC file config from OVPN file then reload
+    var OVPNFile;
+    var oncToLoad;
+    OVPNFile = configString;
+    if (!isOVPNClientConfig(OVPNFile)){
+      result.errors.push(['errorDuringLoad', "Not an OpenVPN Client Config file"]);
+    }
+    if (result.errors.length === 0) {
+    loadDialog.loadConfig(oncToLoad,"oncFile.onc");}
+  }
+  else {
   // Check and see if the config is encrypted or not, and decrypt it
   // using the passphrase if it is.
   var config;
@@ -65,7 +77,7 @@ loadDialog.loadConfig = function(configString) {
 
   if (!result.errors.length) {
     result = onc.validateUnencryptedConfiguration(config, result);
-  }
+  }}
 
   // Display the errors we found (if any)
   if (result.errors.length == 0) {
@@ -80,6 +92,7 @@ loadDialog.loadConfig = function(configString) {
 
   loadDialog.oncToLoad = config;
   loadDialog.oncToLoadResult  = result;
+  
 };
 
 /**
@@ -92,6 +105,7 @@ loadDialog.handleLoadFile = function(files) {
   $('#apply-errors').html('');
   for (var i = 0; i < files.length; ++i) {
     var file = files[i];
+    loadDialog.fileNameToLoad = file.name;
     var reader = new FileReader();
     reader.onload = function(theFile) {
       // Enable the Load File button when done reading from disk.
@@ -118,19 +132,21 @@ loadDialog.configureLoadFilePicker = function() {
  * Handles apply button press in load dialog.
  */
 loadDialog.onApplyPress = function() {
-  loadDialog.loadConfig(loadDialog.oncToLoad);
+  loadDialog.loadConfig(loadDialog.oncToLoad,loadDialog.fileNameToLoad);
   // Ignore apply button if nothing was loaded or there are errors.
   if (!loadDialog.oncToLoadResult || loadDialog.oncToLoadResult.errors.length) {
     // Clear the filename and passphrase out if we had errors.
     $('#load-file-form')[0].reset();
     main.disableInput($('#apply-button', '#load-dialog'));
     ui.showMessages(loadDialog.oncToLoadResult, '#load-dialog');
+    loadDialog.fileNameToLoad = undefined;
     loadDialog.oncToLoad = undefined;
     loadDialog.oncToLoadResult = undefined;
     return;
   }
   main.oncCurrent = loadDialog.oncToLoad;
   main.externalEntitySet = onc.getEntitySet(main.oncCurrent);
+  loadDialog.fileNameToLoad = undefined;
   loadDialog.oncToLoad = undefined;
   loadDialog.oncToLoadResult = undefined;
   ui.dismissDialog();
