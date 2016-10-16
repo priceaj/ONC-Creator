@@ -77,7 +77,7 @@
     </div>
 
     <button class="dialog" id="load-button">Load configuration</button>
-    <button class="dialog" id="download-button">Save configuration</button>
+    <button class="dialog" id="save-request-button">Download configuration</button>
     <button class="dialog" id="clear-button">Clear all</button>
   </div>
 
@@ -357,6 +357,7 @@
     <div class="modal-dialog" id="download-dialog">
       <h1 i18n="downloadConfigurationTab"></h1>
       <div class="content">
+        <input type="checkbox" id="use-encryption" unchecked hidden></input>
         <h2 i18n="downloadConfigurationToFile"></h2>
         <div id="download-link-div">
           <p class="help" i18n="helpDownloadConfigurationToFile"></p>
