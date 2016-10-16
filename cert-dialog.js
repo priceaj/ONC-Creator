@@ -48,30 +48,36 @@ certDialog.handleCertFileList = function(files) {
     var file = files[i];
     var reader = new FileReader();
     reader.onload = function(theFile) {
-      var derUint8;
-      if (file.name.match(/\.pem$/) || file.name.match(/\.crt$/)) {
-        var der = Base64.unarmor(this.result);
-        derUint8 = main.arrayToUint8Array(der);
-      } else if (file.name.match(/\.der/)) {
-        // TODO: This is currently broken
-        var der = this.result;
-        derUint8 = main.arrayToUint8Array(der);
-      }
-      certDialog.certData = {};
-      if (derUint8)
-        certDialog.certData.X509 = Base64.encode(derUint8);
-      // Create a new ONC object.
-      var newCert = certDialog.getFromUi();
-      var oncTest = onc.createUpdate(newCert, 'Certificates');
-      var results = onc.validateCertificate(
-        onc.findCert(newCert.GUID, oncTest), oncTest);
-      ui.showMessages(results, '#cert-dialog');
-      certDialog.updateBox();
+    certDialog.certData = {};
+    certDialog.certData.X509 = certDialog.translateCertificatestoX509(theFile);
+    // Create a new ONC object.
+    var newCert = certDialog.getFromUi();
+    var oncTest = onc.createUpdate(newCert, 'Certificates');
+    var results = onc.validateCertificate(
+      onc.findCert(newCert.GUID, oncTest), oncTest);
+    ui.showMessages(results, '#cert-dialog');
+    certDialog.updateBox();
     };
+    reader.fileName = file.name;
     reader.readAsBinaryString(file);
   }
   return false;
 };
+
+certDialog.translateCertificatestoX509 = function(theFile) {
+      var derUint8;
+      if (theFile.currentTarget.fileName.match(/\.pem$/) || theFile.currentTarget.fileName.match(/\.crt$/)) {
+        var der = Base64.unarmor(theFile.currentTarget.result);
+        derUint8 = main.arrayToUint8Array(der);
+      } else if (theFile.currentTarget.fileName.match(/\.der/)) {
+        // TODO: This is currently broken
+        var der = theFile.currentTarget.result;
+        derUint8 = main.arrayToUint8Array(der);
+      }
+      
+      if (derUint8)
+        return Base64.encode(derUint8);
+    };
 
 /**
  * Set up the UI with the given certificate ONC.  Error checking is
