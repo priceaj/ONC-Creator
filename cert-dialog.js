@@ -87,9 +87,9 @@ certDialog.translateCertificatestoX509 = function(theFile) {
 certDialog.setToUi = function(oncCert) {
   certDialog.oncBase = oncCert;
   certDialog.certData.X509 = oncCert.X509;
-  if ('Trust' in oncCert) {
-    for (var i = 0; i < oncCert.Trust.length; ++i) {
-      if (oncCert.Trust[i] == 'Web')
+  if ('TrustBits' in oncCert) {
+    for (var i = 0; i < oncCert.TrustBits.length; ++i) {
+      if (oncCert.TrustBits[i] == 'Web')
         $('#web-trust')[0].checked = true;
     }
   }
@@ -113,8 +113,8 @@ certDialog.getFromUi = function() {
   var oncCert = {};
   if ('oncBase' in certDialog)
     oncCert = certDialog.oncBase;
-  onc.setUpArray(oncCert, 'Trust');
-  onc.setBitArray(oncCert.Trust, 'Web', $('#web-trust').is(':checked'));
+  onc.setUpArray(oncCert, 'TrustBits');
+  onc.setBitArray(oncCert.TrustBits, 'Web', $('#web-trust').is(':checked'));
   oncCert.GUID = $('#cert-guid').val();
   oncCert.Type = $('#cert-type').val();
   if ('X509' in certDialog.certData)

@@ -7,30 +7,6 @@ ovpn.isOVPNClientConfig = function(OVPNFile) {
 };
 
 ovpn.parseFile =  function(OVPNFile){
-  //Certs
-  var InlineCertsObject,OVPNFile = ovpn.retreiveInlineCerts(OVPNFile);
-  //for all certs create a new cert object
-  // var oncCert = {};
-  // if ('oncBase' in certDialog)
-  //   oncCert = certDialog.oncBase;
-  // onc.setUpArray(oncCert, 'Trust');
-  // onc.setBitArray(oncCert.Trust, 'Web', $('#web-trust').is(':checked'));
-  // oncCert.GUID = $('#cert-guid').val();
-  // oncCert.Type = $('#cert-type').val();
-  // if ('X509' in certDialog.certData)
-  //   oncCert.X509 = certDialog.certData.X509;
-  // return oncCert;
-  var certificates = [];
-  
-  for (var property in InlineCertsObject){
-    
-  };
-  
-  function createCertificate(certficates){
-  var certificate = {};
-  certificate.GUID = main.createGuid();
-  return certificates.push.certificate};
-  
   //Options
   OVPNFileArray = OVPNFile.split ("\n");
   var OPVNOptionsArray = {};
@@ -55,48 +31,80 @@ ovpn.parseFile =  function(OVPNFile){
   
   for (var property in OPVNOptionsArray) {
     if (property in ovpn.mapping){
-      certificates,network = ovpn.mapping[property](OPVNOptionsArray[property],certificates,network);
+      network = ovpn.mapping[property](OPVNOptionsArray[property],network);
     }
   }
-  var oncTest = onc.createUpdate(certificates, 'Certificates');
-  return oncTest = onc.createUpdate(network, 'NetworkConfigurations');
+
+  //Certs
+  InlineCertsObject = {};
+  InlineCertsObject,OVPNFile = ovpn.retreiveInlineCerts(InlineCertsObject,OVPNFile);
+  for (var certType in InlineCertsObject){
+    var theFile = {};
+    theFile.currentTarget = {};
+    theFile.currentTarget.fileName = "test.crt"
+    theFile.currentTarget.result = InlineCertsObject[certType]
+    certDialog.certData = {};
+    certDialog.certData.X509 = certDialog.translateCertificatestoX509(theFile);
+    // Create a new ONC object.
+    var newCert = certDialog.getFromUi();
+    newCert.GUID = main.createGuid();
+
+    if (certType == "ca") {
+      newCert.Type = "Authority"
+      network.VPN.OpenVPN.ServerCARef = newCert.GUID
+      network.VPN.OpenVPN.ClientCertType = "Pattern"
+      network.VPN.OpenVPN.ClientCertPattern = {}
+      network.VPN.OpenVPN.ClientCertPattern.IssuerCARef = [newCert.GUID]
+    }
+          var oncTest = onc.createUpdate(newCert, 'Certificates');
+  };
+  oncTest = onc.createUpdate(network, 'NetworkConfigurations',oncTest);
+  
+  return oncTest
 };
 
-ovpn.retreiveInlineCerts = function(OVPNFile){
- var InlineCerts = {};
+ovpn.retreiveInlineCerts = function(InlineCerts,OVPNFile){
  
- function readCert(OVPNFile,tag){
- var cert = "";
+ function readCert(tag,OVPNFile,certObject){
  startTag = "<" + tag + ">";
  endTag = "</" + tag + ">";
  if (OVPNFile.indexOf(startTag) != -1) {
-   cert = OVPNFile.slice(OVPNFile.indexOf(startTag)+startTag.length,OVPNFile.indexOf(endTag));
-   OVPNFile = OVPNFile.slice(0,OVPNFile.indexOf(startTag))+OVPNFile.slice(OVPNFile.indexOf(endTag)+endTag.length,OVPNFile.length)
-   return cert,OVPNFile;
+   certObject[tag] = OVPNFile.slice(OVPNFile.indexOf(startTag)+startTag.length,OVPNFile.indexOf(endTag));
+   OVPNFile = OVPNFile.slice(0,OVPNFile.indexOf(startTag))+OVPNFile.slice(OVPNFile.indexOf(endTag)+endTag.length,OVPNFile.length);
+   return certObject,OVPNFile;
  }
- else return "";
- }
- 
- InlineCerts["ca"],OVPNFile = readCert(OVPNFile,"ca");
- InlineCerts["cert"],OVPNFile = readCert(OVPNFile,"cert");
- InlineCerts["dh"],OVPNFile = readCert(OVPNFile,"dh");
- InlineCerts["extra-certs"],OVPNFile = readCert(OVPNFile,"extra-certs");
- InlineCerts["key"],OVPNFile = readCert(OVPNFile,"key");
- InlineCerts["pkcs12"],OVPNFile = readCert(OVPNFile,"pkcs12");
- InlineCerts["secret"],OVPNFile = readCert(OVPNFile,"secret");
- InlineCerts["tls-auth"],OVPNFile = readCert(OVPNFile,"tls-auth");
- return InlineCerts,OVPNFile;
+ else return certObject,OVPNFile;
  }
 
+
+  for (var tag in ovpn.certTypes){
+     InlineCerts,OVPNFile = readCert(ovpn.certTypes[tag],OVPNFile,InlineCerts);
+  }
+  
+ return InlineCerts,OVPNFile;
+ };
+
 ovpn.mapping = {
-  "remote" : function(option,certs,network){
+  "remote" : function(option,network){
                network.VPN.Host = (option.split(" "))[0];
-               if (network.VPN.OpenVPN.Port === undefined) {network.VPN.OpenVPN.Port = (option.split(" "))[1]}
+               if (network.VPN.OpenVPN.Port === undefined) {network.VPN.OpenVPN.Port = parseInt((option.split(" "))[1])}
                if (network.VPN.OpenVPN.Proto === undefined) {network.VPN.OpenVPN.Proto = (option.split(" "))[2];}
-             return certs,network},
-  "proto" : function(option,certs,network){network.VPN.OpenVPN.Proto = option; return certs,network},
-  "remote-cert-tls" : function(option,certs,network){network.VPN.OpenVPN.RemoteCertTLS = option; return certs,network},
-  "comp-lzo" : function(option,certs,network){if (option !== ""){network.VPN.OpenVPN.CompLZO = option;} return certs,network},
-  "verb" : function(option,certs,network){network.VPN.OpenVPN.Verb = option; return certs,network},
-  "reneg-sec" : function(option,certs,network){network.VPN.OpenVPN.RenegSec = option; return certs,network}
+             return network},
+  "proto" : function(option,network){network.VPN.OpenVPN.Proto = option; return network},
+  "remote-cert-tls" : function(option,network){network.VPN.OpenVPN.RemoteCertTLS = option; return network},
+  "comp-lzo" : function(option,network){if (option !== ""){network.VPN.OpenVPN.CompLZO = option;} return network},
+  "verb" : function(option,network){network.VPN.OpenVPN.Verb = option; return network},
+  "reneg-sec" : function(option,network){network.VPN.OpenVPN.RenegSec = parseInt(option); return network}
 };
+
+ovpn.certTypes = {
+             ca : "ca",
+           cert : "cert",
+             dh : "dh",
+     extraCerts : "extra-certs",
+            key : "key",
+         pkcs12 : "pkcs12",
+         secret : "secret",
+        tlsAuth : "tls-auth"
+};
+

@@ -51,7 +51,7 @@ loadDialog.loadConfig = function(configString,fileName) {
     oncToLoad = ovpn.parseFile(OVPNFile);
     
     if (result.errors.length === 0) {
-    loadDialog.loadConfig(oncToLoad,"oncFile.onc");}
+    loadDialog.loadConfig(JSON.stringify(oncToLoad),"oncFile.onc");}
   }
   else {
   // Check and see if the config is encrypted or not, and decrypt it
@@ -91,8 +91,10 @@ loadDialog.loadConfig = function(configString,fileName) {
   }
   ui.showMessages(result, '#load-dialog');
 
-  loadDialog.oncToLoad = config;
-  loadDialog.oncToLoadResult  = result;
+  if (config != undefined) {
+    loadDialog.oncToLoad = config;
+    loadDialog.oncToLoadResult  = result;
+  }
   
 };
 
