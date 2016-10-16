@@ -44,11 +44,12 @@ loadDialog.loadConfig = function(configString,fileName) {
   if (fileName.substr(fileName.lastIndexOf('.')+1).toUpperCase() == "OVPN") {
     //Build ONC file config from OVPN file then reload
     var oncToLoad = {};
+    var OVPNFileName = fileName.slice(0,fileName.lastIndexOf('.'));
     var OVPNFile = configString;
     if (!ovpn.isOVPNClientConfig(OVPNFile.toLowerCase())){
       result.errors.push(['errorDuringLoad', "Not an OpenVPN Client Config file"]);
     }
-    oncToLoad = ovpn.parseFile(OVPNFile);
+    oncToLoad = ovpn.parseFile(OVPNFileName, OVPNFile);
     
     if (result.errors.length === 0) {
     loadDialog.loadConfig(JSON.stringify(oncToLoad),"oncFile.onc");}
