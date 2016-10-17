@@ -35,9 +35,13 @@ ovpn.parseFile =  function(OVPNFileName, OVPNFile){
     }
   }
 
+  oncTest = onc.createUpdate(network, 'NetworkConfigurations',oncTest);
+
+
   //Certs
   InlineCertsObject = {};
   InlineCertsObject,OVPNFile = ovpn.retreiveInlineCerts(InlineCertsObject,OVPNFile);
+  
   for (var certType in InlineCertsObject){
     if (certType == "tls-auth"){
       var search = /-----BEGIN [A-Za-z0-9- ]+-----[a-zA-Z0-9\n]*-----END [A-Za-z0-9- ]+-----/g;
@@ -64,6 +68,8 @@ ovpn.parseFile =  function(OVPNFileName, OVPNFile){
     }
           oncTest = onc.createUpdate(newCert, 'Certificates', oncTest);
   }}
+  
+  // Update any new Network settings from certs
   oncTest = onc.createUpdate(network, 'NetworkConfigurations',oncTest);
   
   return oncTest;
