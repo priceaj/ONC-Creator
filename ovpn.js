@@ -107,7 +107,7 @@ ovpn.mapping = {
   "cipher" : function(option,network){network.VPN.OpenVPN.Cipher = option; return network;},
   "key-direction" : function(option,network){network.VPN.OpenVPN.KeyDirection = option; return network;},
   "remote-cert-tls" : function(option,network){network.VPN.OpenVPN.RemoteCertTLS = option; return network;},
-  "comp-lzo" : function(option,network){if (option !== ""){network.VPN.OpenVPN.CompLZO = option;} return network;},
+  "comp-lzo" : function(option,network){if (option !== ""){network.VPN.OpenVPN.CompLZO = option;} else {network.VPN.OpenVPN.CompLZO = "adaptive";} return network;},
   "verb" : function(option,network){network.VPN.OpenVPN.Verb = option; return network;},
   "reneg-sec" : function(option,network){network.VPN.OpenVPN.RenegSec = parseInt(option,10); return network;}
 };
