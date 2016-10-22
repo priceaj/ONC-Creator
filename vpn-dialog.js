@@ -60,7 +60,8 @@ vpnDialog.getCertsFromUi = function(container) {
   var clientCa = $('#vpn-client-ca').val();
   onc.setUpAssocArray(container, 'ClientCertPattern');
   if (clientCa != 'empty') {
-    container.ClientCertPattern.IssuerCARef = clientCa;
+    container.ClientCertPattern.IssuerCARef = [];
+    container.ClientCertPattern.IssuerCARef[0] = clientCa;
   }
   if ($('#vpn-enrollment-uri').val()) {
     container.ClientCertPattern.EnrollmentURI = [
